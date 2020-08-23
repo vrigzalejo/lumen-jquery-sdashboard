@@ -31,5 +31,6 @@ The Lumen framework is open-sourced software licensed under the [MIT license](ht
 4) copy `.env.example` to `.env`
 5) create the db and set the database credentials
 6) run `php artisan migrate`
-7) run `php -S localhost:8000 -t public`
-8) view to browser `http://localhost:8000`
+7) run `php artisan db:seed`
+8) run `php -S localhost:8000 -t public`
+9) view to browser `http://localhost:8000`

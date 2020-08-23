@@ -22,3 +22,10 @@ $factory->define(User::class, function (Faker $faker) {
         'email' => $faker->email,
     ];
 });
+
+$factory->define(\App\Content::class, function (Faker $faker) {
+    return [
+        'title' => $faker->userName,
+        'content' => $faker->sentence(),
+    ];
+});
