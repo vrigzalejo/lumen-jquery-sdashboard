@@ -10,6 +10,16 @@
     <link href="/css/jquery.minitwitter.css" rel="stylesheet">
     <!-- load gitter css -->
     <link href="/css/gitter/css/jquery.gritter.css" rel="stylesheet"/>
+    <style>
+        #myDashboard2 form label {
+            display: block;
+            padding: 0.14em;
+        }
+        #myDashboard2 form input, #myDashboard2 form textarea {
+            margin: 0.14em 0;
+            width: 100%;
+        }
+    </style>
     <!-- load jquery library -->
     <script src="/libs/jquery/jquery-1.8.2.js" type="text/javascript"> </script>
     <!-- load jquery ui library -->
@@ -238,8 +248,81 @@
                 });
             });
 
-        });
+            /** Custom dashboard **/
+            var dashboard2JSON = [];
+            $.ajax({
+                url: '/api/contents',
+                contentType: "application/json",
+                dataType: 'json',
+                async: false,
+                success: function(results){
+                    for (var index in results) {
+                        dashboard2JSON.push({
+                            widgetTitle : results[index].title,
+                            widgetId : results[index].id.toString(),
+                            widgetContent: results[index].content
+                        })
+                    }
+                }
+            })
 
+            var $myDashboard2 = $("ul#myDashboard2");
+            var $dashboard2 = $myDashboard2.sDashboard({
+                dashboardData : dashboard2JSON
+            });
+            $("ul#myDashboard2.sDashboard.ui-sortable").off("click");
+            $dashboard2.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-plus").on("click", function () {
+                var form = "<form method=\"post\" action=\"/api/contents\">" +
+                    "<label for=\"title\">Title:</label><input id=\"title\" name=\"title\" type=\"text\" />" +
+                    "<label for=\"content\">Content:</label><textarea id=\"content\" name=\"content\" type=\"text\" />" +
+                    "<label></label><input type=\"submit\" id=\"submit\" value=\"Submit\" />" +
+                    "</form>"
+                $myDashboard2.sDashboard("addWidget", {
+                    widgetTitle : "Add Content",
+                    widgetId : "new",
+                    widgetContent : form
+                });
+                var $newCard = $myDashboard2.find("#new");
+                $newCard.find(".ui-icon-circle-plus").remove();
+                $newCard.find(".ui-icon-circle-close").bind("click", function (e) {
+                    $myDashboard2.sDashboard("removeWidget", "new");
+                })
+
+                $newCard.submit(function (e) {
+                    e.preventDefault();
+                    var form = $(e.target);
+                    var url = form.attr('action');
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: form.serialize(),
+                        success: function() {
+                            location.reload()
+                        },
+                        error: function (data) {
+                            console.error(data);
+                        },
+                    });
+                });
+            });
+            var $createdCards = $dashboard2.find("li").not("#new");
+            $createdCards.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-close").on("click", function () {
+                if (confirm("Continue to delete this?")) {
+                    var $cardId = $(this).parent().parent().parent().attr("id");
+                    $.ajax({
+                        type: "DELETE",
+                        url: "/api/contents/" + $cardId,
+                        success: function() {
+                            location.reload()
+                        },
+                        error: function (data) {
+                            console.error(data);
+                        },
+                    });
+                }
+                return false;
+            })
+        });
     </script>
 </head>
 
@@ -263,6 +346,9 @@
 <button id="btnAddLineChartWidget">
     6) Add Line Chart widget
 </button>
+<button id="btnDeleteWidget">
+    6) Add Line Chart widget
+</button>
 
 <div id="switcher" style="float:right;"> </div>
 
@@ -272,6 +358,10 @@
 </ul>
 
 <div id="myTweets"> </div>
+
+<ul id="myDashboard2">
+
+</ul>
 
 </body>
 </html>
