@@ -249,7 +249,7 @@
             });
 
             /** Custom dashboard **/
-            var dashboard2JSON = [];
+            let dashboard2JSON = [];
             $.ajax({
                 url: '/api/contents',
                 contentType: "application/json",
@@ -266,15 +266,16 @@
                 }
             })
 
-            var $myDashboard2 = $("ul#myDashboard2");
+            let $myDashboard2 = $("ul#myDashboard2");
             var $dashboard2 = $myDashboard2.sDashboard({
                 dashboardData : dashboard2JSON
             });
             $("ul#myDashboard2.sDashboard.ui-sortable").off("click");
-            $dashboard2.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-plus").on("click", function () {
-                var form = "<form method=\"post\" action=\"/api/contents\">" +
+            $dashboard2.find(".sDashboardWidgetHeader").prepend("<span title=\"Update\" class=\"ui-icon ui-icon-pencil\">");
+            $dashboard2.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-plus").live("click", function () {
+                let form = "<form method=\"post\" action=\"/api/contents\">" +
                     "<label for=\"title\">Title:</label><input id=\"title\" name=\"title\" type=\"text\" />" +
-                    "<label for=\"content\">Content:</label><textarea id=\"content\" name=\"content\" type=\"text\" />" +
+                    "<label for=\"content\">Content:</label><textarea id=\"content\" name=\"content\"></textarea>" +
                     "<label></label><input type=\"submit\" id=\"submit\" value=\"Submit\" />" +
                     "</form>"
                 $myDashboard2.sDashboard("addWidget", {
@@ -282,7 +283,7 @@
                     widgetId : "new",
                     widgetContent : form
                 });
-                var $newCard = $myDashboard2.find("#new");
+                let $newCard = $myDashboard2.find("#new");
                 $newCard.find(".ui-icon-circle-plus").remove();
                 $newCard.find(".ui-icon-circle-close").bind("click", function (e) {
                     $myDashboard2.sDashboard("removeWidget", "new");
@@ -290,8 +291,8 @@
 
                 $newCard.submit(function (e) {
                     e.preventDefault();
-                    var form = $(e.target);
-                    var url = form.attr('action');
+                    let form = $(e.target);
+                    let url = form.attr('action');
                     $.ajax({
                         type: "POST",
                         url: url,
@@ -305,10 +306,13 @@
                     });
                 });
             });
-            var $createdCards = $dashboard2.find("li").not("#new");
-            $createdCards.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-close").on("click", function () {
+
+
+            // let $createdCards = $dashboard2.find("li").not("#new");
+            let $createdCards = $dashboard2.find("li:not(#new)");
+            $createdCards.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-close").live("click", function () {
                 if (confirm("Continue to delete this?")) {
-                    var $cardId = $(this).parent().parent().parent().attr("id");
+                    let $cardId = $(this).parent().parent().parent().attr("id");
                     $.ajax({
                         type: "DELETE",
                         url: "/api/contents/" + $cardId,
@@ -321,7 +325,51 @@
                     });
                 }
                 return false;
-            })
+            });
+
+            $dashboard2.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-pencil").live("click", function () {
+                let $original = $(this).parent().parent();
+                let $cardId = $original.parent().attr("id");
+                let $originalHtml = $original.html();
+                let $originalTitle = $original.find(".sDashboardWidgetHeader").text().trim();
+                let $originalContent = $original.find(".sDashboardWidgetContent").text().trim();
+
+                let $clone = $original.clone(true, true);
+                $clone.find(".sDashboardWidgetHeader").text("Update Content");
+                $clone.find(".sDashboardWidgetHeader").prepend("<span title=\"Back\" class=\"ui-icon ui-icon-arrowreturnthick-1-w\"></span>");
+                let form = "<form action=\"/api/contents/" + $cardId + "\">" +
+                    "<label for=\"title\">Title:</label><input id=\"title\" name=\"title\" value=\"" + $originalTitle + "\" type=\"text\" />" +
+                    "<label for=\"content\">Content:</label><textarea id=\"content\" name=\"content\">" + $originalContent + "</textarea>" +
+                    "<label></label><input type=\"submit\" id=\"submit\" value=\"Submit\" />" +
+                    "</form>"
+                $clone.find(".sDashboardWidgetContent").html(form);
+                let $cloneHtml = $clone.html();
+
+                // contains the new elements
+                $original.html($cloneHtml);
+
+                $original.find(".sDashboardWidgetHeader .ui-icon-arrowreturnthick-1-w").on("click", function () {
+                    // revert to original elements
+                    $original.html($originalHtml);
+                });
+
+                $original.submit(function (e) {
+                    e.preventDefault();
+                    let form = $(e.target);
+                    let url = form.attr('action');
+                    $.ajax({
+                        type: "PUT",
+                        url: url,
+                        data: form.serialize(),
+                        success: function() {
+                            location.reload()
+                        },
+                        error: function (data) {
+                            console.error(data);
+                        },
+                    });
+                });
+            });
         });
     </script>
 </head>
@@ -359,6 +407,8 @@
 
 <div id="myTweets"> </div>
 
+<hr/>
+<h1>This is the customized dashboard</h1>
 <ul id="myDashboard2">
 
 </ul>
