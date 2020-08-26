@@ -15,9 +15,49 @@
             display: block;
             padding: 0.14em;
         }
-        #myDashboard2 form input, #myDashboard2 form textarea {
+        #myDashboard2 form input,
+        #myDashboard2 form textarea {
             margin: 0.14em 0;
             width: 100%;
+        }
+        #myDashboard3.sDashboard li {
+            width: 100%;
+        }
+        #myDashboard3 form label {
+            display: block;
+            padding: 0.14em;
+        }
+        #myDashboard3 form input,
+        #myDashboard3 form textarea {
+            margin: 0.14em 0;
+            width: 100%;
+        }
+        #myDashboard3CreateDialog label,
+        #myDashboard3UpdateDialog label {
+            display: block;
+            float: left;
+            width: 100%;
+            padding-right: 10px;
+        }
+        #myDashboard3CreateDialog,
+        #myDashboard3UpdateDialog,
+        #myDashboard3CreateDialog form,
+        #myDashboard3UpdateDialog form {
+            min-height: 250px !important;
+        }
+        #myDashboard3CreateDialog input,
+        #myDashboard3CreateDialog select,
+        #myDashboard3CreateDialog textarea,
+        #myDashboard3UpdateDialog input,
+        #myDashboard3UpdateDialog select,
+        #myDashboard3UpdateDialog textarea {
+            float: left;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        #myDashboard3CreateDialog textarea,
+        #myDashboard3UpdateDialog textarea {
+            height: 80%;
         }
     </style>
     <!-- load jquery library -->
@@ -264,13 +304,13 @@
                         })
                     }
                 }
-            })
+            });
 
             let $myDashboard2 = $("ul#myDashboard2");
-            var $dashboard2 = $myDashboard2.sDashboard({
+            let $dashboard2 = $myDashboard2.sDashboard({
                 dashboardData : dashboard2JSON
             });
-            $("ul#myDashboard2.sDashboard.ui-sortable").off("click");
+            $myDashboard2.off("click");
             $dashboard2.find(".sDashboardWidgetHeader").prepend("<span title=\"Update\" class=\"ui-icon ui-icon-pencil\">");
             $dashboard2.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-plus").live("click", function () {
                 let form = "<form method=\"post\" action=\"/api/contents\">" +
@@ -308,7 +348,6 @@
             });
 
 
-            // let $createdCards = $dashboard2.find("li").not("#new");
             let $createdCards = $dashboard2.find("li:not(#new)");
             $createdCards.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-close").live("click", function () {
                 if (confirm("Continue to delete this?")) {
@@ -370,6 +409,144 @@
                     });
                 });
             });
+
+            let dashboard3JSON = dashboard2JSON;
+            let $myDashboard3 = $("ul#myDashboard3");
+            let $dashboard3 = $myDashboard3.sDashboard({
+                dashboardData: [{
+                    widgetTitle: "Custom Table Widget",
+                    widgetId: "custom_table",
+                    widgetType: "table",
+                    widgetContent: {
+                        "bProcessing": true,
+                        "bPaginate": false,
+                        "bLengthChange": false,
+                        "bFilter": true,
+                        "bSort": false,
+                        "bInfo": false,
+                        "bAutoWidth": false,
+                        "aaData": dashboard3JSON,
+                        "aoColumns": [{
+                            "mData": "widgetId"
+                        }, {
+                            "mData": "widgetTitle"
+                        }, {
+                            "mData": "widgetContent"
+                        }, {
+                            "mData": null,
+                            "bSortable": false,
+                            "mRender": function () { return "<span title=\"Update\" id=\"edit\" class=\"ui-icon ui-icon-pencil\">Update</span>"; }
+                        },{
+                            "mData": null,
+                            "bSortable": false,
+                            "mRender": function () { return "<span title=\"Delete\" id=\"delete\" class=\"ui-icon ui-icon-circle-close\">Delete</span>"; }
+                        }],
+                    }
+                }]
+            });
+            $myDashboard3.off("click");
+            $dashboard3.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-close").remove()
+            $dashboard3.find(".sDashboardWidgetHeader span.ui-icon.ui-icon-circle-plus").live("click", function () {
+                let form = "<form method=\"post\" action=\"/api/contents\">" +
+                    "<label for=\"title\">Title:</label><input id=\"title\" name=\"title\" type=\"text\" />" +
+                    "<label for=\"content\">Content:</label><textarea rows=\"5\" id=\"content\" name=\"content\"></textarea>" +
+                    "</form>"
+
+                $(form).dialog({
+                    modal: true,
+                    position: {
+                        my: "center top",
+                        at: "center top",
+                        of: window,
+                        collision: "none"
+                    },
+                    buttons: {
+                        'Submit': function (e) {
+                            let form = $(this).parent().find("form");
+                            let url = form.attr('action');
+                            $.ajax({
+                                type: "POST",
+                                url: url,
+                                data: form.serialize(),
+                                success: function() {
+                                    location.reload()
+                                },
+                                error: function (data) {
+                                    console.error(data);
+                                },
+                            });
+                        }
+                    }
+                }).parent().attr("id", "myDashboard3CreateDialog");
+            });
+            $dashboard3.find("span.ui-icon.ui-icon-pencil").live("click", function () {
+                let $parent = $(this).parent().parent();
+                let $id = $parent.find("td:first-child").text();
+                let $title = $parent.find("td:nth-child(2)").text();
+                let $content = $parent.find("td:nth-child(3)").text();
+                let form = "<form action=\"/api/contents/" + $id + "\">" +
+                    "<label for=\"title\">Title:</label><input id=\"title\" name=\"title\" type=\"text\" value=\"" + $title + "\"/>" +
+                    "<label for=\"content\">Content:</label><textarea id=\"content\" name=\"content\">" + $content + "</textarea>" +
+                    "</form>"
+
+                $(form).dialog({
+                    modal: true,
+                    position: {
+                        my: "center top",
+                        at: "center top",
+                        of: window,
+                        collision: "none"
+                    },
+                    buttons: {
+                        'Submit': function (e) {
+                            let form = $(this).parent().find("form");
+                            let url = form.attr('action');
+                            $.ajax({
+                                type: "PUT",
+                                url: url,
+                                data: form.serialize(),
+                                success: function() {
+                                    location.reload()
+                                },
+                                error: function (data) {
+                                    console.error(data);
+                                },
+                            });
+                        }
+                    }
+                }).parent().attr("id", "myDashboard3UpdateDialog");
+            });
+            $dashboard3.find("span.ui-icon.ui-icon-circle-close").live("click", function () {
+                let $parent = $(this).parent().parent();
+                let $id = $parent.find("td:first-child").text();
+                let $title = $parent.find("td:nth-child(2)").text();
+                $("<p>Are you sure, you want to delete \"" + $title + "\"?</p>").dialog({
+                    modal: true,
+                    position: {
+                        my: "center top",
+                        at: "center top",
+                        of: window,
+                        collision: "none"
+                    },
+                    buttons: {
+                        'Yes': function () {
+                            $.ajax({
+                                type: "DELETE",
+                                url: "/api/contents/" + $id,
+                                success: function() {
+                                    location.reload()
+                                },
+                                error: function (data) {
+                                    console.error(data);
+                                },
+                            });
+                        },
+                        'No': function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            });
         });
     </script>
 </head>
@@ -410,8 +587,9 @@
 <hr/>
 <h1>This is the customized dashboard</h1>
 <ul id="myDashboard2">
-
 </ul>
-
+<h1>This is the customized table widget</h1>
+<ul id="myDashboard3">
+</ul>
 </body>
 </html>
