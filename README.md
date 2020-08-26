@@ -25,7 +25,7 @@ The Lumen framework is open-sourced software licensed under the [MIT license](ht
 
 ### Running the app
 
-1) run `git@github.com:vrigzalejo/lumen-jquery-sdashboard.git`
+1) clone the repo `git clone git@github.com:vrigzalejo/lumen-jquery-sdashboard.git dashboard`
 2) run `cd dashboard`
 3) run `composer update`
 4) copy `.env.example` to `.env`
