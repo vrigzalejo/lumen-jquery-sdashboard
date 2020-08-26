@@ -486,7 +486,7 @@
                 let $content = $parent.find("td:nth-child(3)").text();
                 let form = "<form action=\"/api/contents/" + $id + "\">" +
                     "<label for=\"title\">Title:</label><input id=\"title\" name=\"title\" type=\"text\" value=\"" + $title + "\"/>" +
-                    "<label for=\"content\">Content:</label><textarea id=\"content\" name=\"content\">" + $content + "</textarea>" +
+                    "<label for=\"content\">Content:</label><textarea rows=\"5\" id=\"content\" name=\"content\">" + $content + "</textarea>" +
                     "</form>"
 
                 $(form).dialog({
